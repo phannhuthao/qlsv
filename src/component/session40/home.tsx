@@ -13,6 +13,7 @@ type StudentType = {
 
 const Student = () => {
   const [data, setData] = useState<StudentType[]>(initData);
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
 
   // Xóa
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -187,6 +188,9 @@ const Student = () => {
     setNewAddress("");
   };
   
+  const filteredData = data.filter(student => 
+    student.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div>
@@ -204,6 +208,8 @@ const Student = () => {
               type="text"
               className="form-control"
               placeholder="Tìm kiếm theo email"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)} // Update search query state
             />
             <i className="fa-solid fa-arrows-rotate" title="Refresh" />
           </div>
@@ -221,7 +227,7 @@ const Student = () => {
               </tr>
             </thead>
             <tbody>
-              {data.map((stu, index) => (
+              {filteredData.map((stu, index) => (
                 <tr key={index}>
                   <td>{index + 1}</td>
                   <td>{stu.name}</td>
