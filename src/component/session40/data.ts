@@ -7,7 +7,7 @@ export const data = [
     status: true},
 
     {id: 2, 
-    name: '	Trần Thị B',
+    name: 'Trần Thị B',
     dateOfBirth: '15/07/1985', 
     email: 'ttb@gmail.com', 
     address: 'Cầu Giấy, Hà Nội', 

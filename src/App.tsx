@@ -1,35 +1,26 @@
-import { useState } from 'react'
-// import './App.css'
-import Home from './component/session40/home'
+import { Container, Row, Col } from 'react-bootstrap';
+import Sidebar from './component/session41/sidebar';
+import FormExample from './component/session41/nav';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import Grid from './component/session41/Grid';
+import Table from './component/session41/table';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      {/* <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p> */}
-      <Home></Home>
-    </>
-  )
+    <Container fluid>
+      <Row>
+        <Col xs={2} id="sidebar-wrapper">
+          <Sidebar />
+        </Col>
+        <Col xs={10} id="page-content-wrapper">
+          <FormExample />
+          <h1>Sale Infomation</h1>
+          <Grid></Grid>
+          <Table></Table>
+        </Col>
+      </Row>
+    </Container>
+  );
 }
 
-export default App
+export default App;
