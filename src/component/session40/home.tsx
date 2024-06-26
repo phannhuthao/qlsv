@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import "./home.css";
 import { data as initData } from "./data";
 
@@ -13,7 +13,7 @@ type StudentType = {
 
 const Student = () => {
   const [data, setData] = useState<StudentType[]>(initData);
-  const [searchQuery, setSearchQuery] = useState(""); // State for search query
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Xóa
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -25,14 +25,18 @@ const Student = () => {
 
   // Thêm
   const [showAddForm, setShowAddForm] = useState(false);
-  const [showEditForm, setShowEditForm] = useState(false);
 
   // Sửa
+  const [showEditForm, setShowEditForm] = useState(false);
   const [editStudent, setEditStudent] = useState<StudentType | null>(null);
   const [newName, setNewName] = useState("");
   const [newDateOfBirth, setNewDateOfBirth] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newAddress, setNewAddress] = useState("");
+
+  // Phân Trang 
+  const [size, setSize] = useState(2); // kích thước phần tử trên 1 trang
+  const [currentPage, setCurrentPage] = useState(4); // số trang hiện tại
 
   const handleDeleteClick = (student: StudentType) => {
     setSelectedStudent(student);
@@ -153,44 +157,57 @@ const Student = () => {
       alert("Họ và tên và Email không được để trống!");
       return;
     }
-  
+
     if (!validateEmail(newEmail)) {
       alert("Email không đúng định dạng!");
       return;
     }
-  
+
     const currentDate = new Date();
     const selectedDate = new Date(newDateOfBirth);
     if (selectedDate > currentDate) {
       alert("Ngày sinh không được lớn hơn ngày hiện tại!");
       return;
     }
-  
+
     const newId = data.length > 0 ? data[data.length - 1].id + 1 : 1;
-  
+
     const newStudent: StudentType = {
       id: newId,
       name: newName,
       dateOfBirth: newDateOfBirth,
       email: newEmail,
       address: newAddress,
-      status: true, 
+      status: true,
     };
-  
+
     setData([...data, newStudent]);
-  
+
     setShowAddForm(false);
     saveToLocalStorage([...data, newStudent]);
-  
+
     setNewName("");
     setNewDateOfBirth("");
     setNewEmail("");
     setNewAddress("");
   };
-  
-  const filteredData = data.filter(student => 
-    student.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+
+  // tính tổng số trang 
+  const totalPages = useMemo(() => {
+    return Math.ceil(data.length / size)
+  }, [data, size])
+
+
+  // // Lọc các phần tử theo page và size, chức năng tìm kiếm theo email
+  const filterData = useMemo(() => {
+    const filtered = data.filter(student =>
+      student.email.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    const start = (currentPage - 1) * size;
+    const end = currentPage * size;
+    return filtered.slice(start, end);
+  }, [data, searchQuery, currentPage, size]);
+
 
   return (
     <div>
@@ -209,7 +226,7 @@ const Student = () => {
               className="form-control"
               placeholder="Tìm kiếm theo email"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)} // Update search query state
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
             <i className="fa-solid fa-arrows-rotate" title="Refresh" />
           </div>
@@ -227,7 +244,7 @@ const Student = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredData.map((stu, index) => (
+              {filterData.map((stu, index) => (
                 <tr key={index}>
                   <td>{index + 1}</td>
                   <td>{stu.name}</td>
@@ -235,29 +252,26 @@ const Student = () => {
                   <td>{stu.email}</td>
                   <td>{stu.address}</td>
                   <td>
-                    <div
+                  <div
                       style={{
                         display: "flex",
                         alignItems: "center",
                         gap: 8,
                       }}
                     >
-                      <div
-                        className={`status status-${stu.status ? "active" : "stop"}`}
-                      />
+                      <div className={`status status-${stu.status ? "active" : "stop"}`} />
                       <span>{stu.status ? "Đang hoạt động" : "Ngừng hoạt động"}</span>
                     </div>
                   </td>
                   <td>
-                    {stu.status ? (
-                      <span className="button button-block" onClick={() => handleBlockClick(stu)}>
-                        Bỏ chặn
-                      </span>
-                    ) : (
-                      <span className="button button-block" onClick={() => handleBlockClick(stu)}>
-                        Chặn
-                      </span>
-                    )}
+                    <span
+                      className={`button button-${stu.status ? "block" : "unblock"}`}
+                      onClick={() => {
+                        handleBlockClick(stu);
+                      }}
+                    >
+                      {stu.status ? "Chặn" : "Bỏ chặn"}
+                    </span>
                   </td>
                   <td>
                     <span className="button button-edit" onClick={() => handleEditClick(stu)}>Sửa</span>
@@ -269,39 +283,28 @@ const Student = () => {
               ))}
             </tbody>
           </table>
+          
           <footer className="d-flex justify-content-end align-items-center gap-3">
-            <select className="form-select">
-              <option selected>Hiển thị 10 bản ghi trên trang</option>
-              <option>Hiển thị 20 bản ghi trên trang</option>
-              <option>Hiển thị 50 bản ghi trên trang</option>
-              <option>Hiển thị 100 bản ghi trên trang</option>
+            <select className="form-select" value={size} onChange={(e) => setSize(+e.target.value)}>
+              <option value={2}>Hiển thị 2 bản ghi trên trang</option>
+              <option value={5}>Hiển thị 5 bản ghi trên trang</option>
+              <option value={8}>Hiển thị 8 bản ghi trên trang</option>
+              <option value={10}>Hiển thị 10 bản ghi trên trang</option>
             </select>
             <ul className="pagination">
-              <li className="page-item">
-                <a className="page-link" href="#">
+              <li className={`page-item ${currentPage == 1 ? "disabled" : ""}`}>
+                <a onClick={() => setCurrentPage(currentPage - 1)} className="page-link" href="#">
                   Previous
                 </a>
               </li>
-              <li className="page-item">
-                <a className="page-link" href="#">
-                  1
-                </a>
-              </li>
-              <li className="page-item">
-                <a className="page-link" href="#">
-                  2
-                </a>
-              </li>
-              <li className="page-item">
-                <a className="page-link" href="#">
-                  3
-                </a>
-              </li>
-              <li className="page-item">
-                <a className="page-link" href="#">
-                  Next
-                </a>
-              </li>
+              {/* đổ ra số trang tương ứng với số thẻ li */}
+              {
+                Array.from(new Array(totalPages), (_, index) => index + 1).map((page, index) =>
+                  <li className={`page-item ${currentPage == page ? "active" : ""}`}><a onClick={() => setCurrentPage(page)} className="page-link" href="#">{index + 1}</a></li>
+                )
+              }
+
+              <li className={`page-item ${currentPage == totalPages ? "disabled" : ""}`}><a onClick={() => setCurrentPage(currentPage + 1)} className="page-link" href="#">Next</a></li>
             </ul>
           </footer>
         </main>
@@ -479,7 +482,7 @@ const Student = () => {
         </div>
       )}
 
-      {/* Form xác nhận xóa */} 
+      {/* Form xác nhận xóa */}
       {showDeleteConfirm && (
         <div className="overlay">
           <div className="modal-custom">

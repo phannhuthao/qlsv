@@ -39,13 +39,15 @@
   }
   
   .button-delete {
-    background-color: red;
+    background-color: blue;
   }
   
   .button-block {
-    background-color: green;
+    background-color: green
   }
-  
+  .button-unblock {
+    background-color: red 
+  }
   td:first-child,
   td:nth-child(6),
   td:nth-child(7) {
